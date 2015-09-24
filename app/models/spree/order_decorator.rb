@@ -5,7 +5,7 @@ Spree::Order.class_eval do
 
   state_machine.after_transition to: :complete, do: :delink_addresses
   before_validation :delink_addresses_validation, if: :complete?
-  # before_validation :merge_user_addresses, unless: :complete?
+  before_validation :merge_user_addresses, unless: :complete?
 
   after_save :touch_addresses
 
@@ -177,43 +177,52 @@ Spree::Order.class_eval do
   # addresses to user addresses if matching addresses exist.
   def merge_user_addresses
     if user
-      l = Spree::AddressBookList.new(user)
-
-      if self.bill_address
-        bill = l.find(self.bill_address)
-        if bill
-          if self.bill_address_id != bill.id
-            oldbill = self.bill_address
-            self.bill_address_id = bill.primary_address.id
-            oldbill.destroy
-          end
-        end
-
-        if self.bill_address.user_id.nil?
-          self.bill_address.user = self.user
-          self.bill_address.save
-        end
+      if bill_address && bill_address.valid? && !bill_address.user_id.nil?
+        self.bill_address.user_id = user.id
+        self.bill_address.save
       end
 
-      if self.ship_address
-        if self.ship_address.same_as?(self.bill_address)
-          self.ship_address = self.bill_address
-        else
-          ship = l.find(self.ship_address)
-          if ship
-            if self.ship_address_id != ship.id
-              oldship = self.ship_address
-              self.ship_address_id = ship.primary_address.id
-              oldship.destroy
-            end
-          end
-
-          if self.ship_address.user_id.nil?
-            self.ship_address.user = self.user
-            self.ship_address.save
-          end
-        end
+      if ship_address && ship_address.valid? && !ship_address.user_id.nil?
+        self.ship_address.user_id = user.id
+        self.ship_address.save
       end
+      # l = Spree::AddressBookList.new(user)
+
+      # if self.bill_address
+      #   bill = l.find(self.bill_address)
+      #   if bill
+      #     if self.bill_address_id != bill.id
+      #       oldbill = self.bill_address
+      #       self.bill_address_id = bill.primary_address.id
+      #       oldbill.destroy
+      #     end
+      #   end
+
+      #   if self.bill_address.user_id.nil?
+      #     self.bill_address.user = self.user
+      #     self.bill_address.save
+      #   end
+      # end
+
+      # if self.ship_address
+      #   if self.ship_address.same_as?(self.bill_address)
+      #     self.ship_address = self.bill_address
+      #   else
+      #     ship = l.find(self.ship_address)
+      #     if ship
+      #       if self.ship_address_id != ship.id
+      #         oldship = self.ship_address
+      #         self.ship_address_id = ship.primary_address.id
+      #         oldship.destroy
+      #       end
+      #     end
+
+      #     if self.ship_address.user_id.nil?
+      #       self.ship_address.user = self.user
+      #       self.ship_address.save
+      #     end
+      #   end
+      # end
 
       user.addresses.reload
     end
