@@ -24,6 +24,7 @@ feature 'Guest order address editing', js: true do
 
     expect {
       within '#shipping' do
+        uncheck 'order_use_billing'
         fill_in_address(build(:fake_address))
       end
 
