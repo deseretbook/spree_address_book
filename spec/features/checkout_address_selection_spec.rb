@@ -86,7 +86,8 @@ feature "Address selection during checkout" do
           expect(page).to have_content("is not a number")
         end
 
-        #expect(find_field('order_ship_address_attributes_zipcode').value).to eq(address2.zipcode)
+        uncheck 'order_use_billing'
+        expect(find_field('order_ship_address_attributes_zipcode').value).to eq(address2.zipcode)
         within '#shipping' do
           expect(page).to have_content("is not a number")
         end
@@ -97,8 +98,11 @@ feature "Address selection during checkout" do
           fill_in Spree.t(:zipcode), with: '1'
         end
 
+        expect(find_field('order_bill_address_attributes_zipcode').value).to eq('1')
+        expect(find_field('order_ship_address_attributes_zipcode').value).to eq(address2.zipcode)
         expect(current_path).to eq('/checkout/update/address')
-
+        click_button 'Continue'
+        
         expect(find_field('order_bill_address_attributes_zipcode').value).to eq('1')
 
         within '#billing' do
@@ -295,6 +299,8 @@ feature "Address selection during checkout" do
             expect(page).to have_content("is not a number")
           end
 
+          uncheck 'order_use_billing'
+          expect(find_field('order_ship_address_attributes_zipcode').value).to eq(address2.zipcode)
           within '#shipping' do
             expect(page).to have_content("is not a number")
           end
