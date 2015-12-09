@@ -24,6 +24,7 @@ feature "Address selection during checkout" do
 
     it "should only see shipping address form" do
       within("#shipping") do
+        uncheck 'order_use_billing'
         should_have_address_fields
         expect(page).to_not have_selector(".select_address")
       end
@@ -36,6 +37,7 @@ feature "Address selection during checkout" do
         fill_in_address(address1)
       end
       within('#shipping') do
+        uncheck 'order_use_billing'
         should_have_address_fields
         expect(page).to have_no_css('.select_address')
         fill_in_address(address2)
@@ -69,6 +71,7 @@ feature "Address selection during checkout" do
         end
 
         within '#shipping' do
+          uncheck 'order_use_billing'
           fill_in_address(address2)
         end
 
@@ -83,6 +86,7 @@ feature "Address selection during checkout" do
           expect(page).to have_content("is not a number")
         end
 
+        uncheck 'order_use_billing'
         expect(find_field('order_ship_address_attributes_zipcode').value).to eq(address2.zipcode)
         within '#shipping' do
           expect(page).to have_content("is not a number")
@@ -94,14 +98,15 @@ feature "Address selection during checkout" do
           fill_in Spree.t(:zipcode), with: '1'
         end
 
-        click_button 'Continue'
-        expect(current_path).to eq('/checkout/update/address')
-
         expect(find_field('order_bill_address_attributes_zipcode').value).to eq('1')
         expect(find_field('order_ship_address_attributes_zipcode').value).to eq(address2.zipcode)
+        expect(current_path).to eq('/checkout/update/address')
+        click_button 'Continue'
+        
+        expect(find_field('order_bill_address_attributes_zipcode').value).to eq('1')
 
         within '#billing' do
-          expect(page).to have_no_content('is not a number')
+          page.should(have_content('1'))
         end
         within '#shipping' do
           expect(page).to have_content('is not a number')
@@ -110,6 +115,7 @@ feature "Address selection during checkout" do
 
         # Test fixing the other address
         within '#shipping' do
+          uncheck 'order_use_billing'
           fill_in Spree.t(:zipcode), with: '2'
         end
 
@@ -158,6 +164,7 @@ feature "Address selection during checkout" do
           fill_in_address(billing)
         end
         within("#shipping") do
+          uncheck 'order_use_billing'
           choose I18n.t(:other_address, :scope => :address_book)
           fill_in_address(shipping)
         end
@@ -172,6 +179,7 @@ feature "Address selection during checkout" do
           fill_in_address(billing)
         end
         within("#shipping") do
+          uncheck 'order_use_billing'
           choose I18n.t(:other_address, :scope => :address_book)
           fill_in_address(billing)
         end
@@ -232,6 +240,7 @@ feature "Address selection during checkout" do
           fill_in_address(address)
         end
         within("#shipping") do
+          uncheck 'order_use_billing'
           fill_in_address(address)
         end
         click_button "Save and Continue"
@@ -268,6 +277,7 @@ feature "Address selection during checkout" do
           end
 
           within '#shipping' do
+            uncheck 'order_use_billing'
             choose I18n.t(:other_address, scope: :address_book)
             fill_in_address(address2)
           end
@@ -289,6 +299,7 @@ feature "Address selection during checkout" do
             expect(page).to have_content("is not a number")
           end
 
+          uncheck 'order_use_billing'
           expect(find_field('order_ship_address_attributes_zipcode').value).to eq(address2.zipcode)
           within '#shipping' do
             expect(page).to have_content("is not a number")
@@ -299,6 +310,7 @@ feature "Address selection during checkout" do
           choose "order_bill_address_id_#{@a.id}"
 
           within '#shipping' do
+            uncheck 'order_use_billing'
             choose I18n.t(:other_address, scope: :address_book)
             fill_in_address(address1)
             fill_in Spree.t(:zipcode), with: 'notnumber'
@@ -330,6 +342,7 @@ feature "Address selection during checkout" do
           fill_in_address(billing)
         end
         within("#shipping") do
+          uncheck 'order_use_billing'
           choose I18n.t(:other_address, :scope => :address_book)
           fill_in_address(shipping)
         end
@@ -357,6 +370,7 @@ feature "Address selection during checkout" do
           address = user.addresses.first
           choose "order_bill_address_id_#{address.id}"
           within("#shipping") do
+            uncheck 'order_use_billing'
             choose I18n.t(:other_address, :scope => :address_book)
             fill_in_address(shipping)
           end
@@ -368,6 +382,7 @@ feature "Address selection during checkout" do
         address = user.addresses.first
         choose "order_bill_address_id_#{address.id}"
         within("#shipping") do
+          uncheck 'order_use_billing'
           choose I18n.t(:other_address, :scope => :address_book)
           fill_in_address(shipping)
         end
@@ -386,8 +401,8 @@ feature "Address selection during checkout" do
       it "should see form when new shipping address invalid" do
         address = user.addresses.first
         shipping = FactoryGirl.build(:address, :address1 => nil, :state => state)
-        choose "order_bill_address_id_#{address.id}"
         within("#shipping") do
+           uncheck 'order_use_billing'
           choose I18n.t(:other_address, :scope => :address_book)
           fill_in_address(shipping)
         end
@@ -517,6 +532,7 @@ feature "Address selection during checkout" do
         end
 
         within '#shipping' do
+          uncheck 'order_use_billing'
           choose I18n.t(:other_address, scope: :address_book)
         end
 
@@ -533,7 +549,6 @@ feature "Address selection during checkout" do
       it "should save 1 new address for user" do
         expect do
           address = user.addresses.first
-          choose "order_ship_address_id_#{address.id}"
           within("#billing") do
             choose I18n.t(:other_address, :scope => :address_book)
             fill_in_address(billing)
@@ -549,7 +564,6 @@ feature "Address selection during checkout" do
         scenario 'selecting addresses does not save them to the user defaults' do
           expect {
             address = user.addresses.first
-            choose "order_ship_address_id_#{address.id}"
             within("#billing") do
               choose I18n.t(:other_address, :scope => :address_book)
               fill_in_address(billing)
@@ -561,7 +575,6 @@ feature "Address selection during checkout" do
       end
 
       it "should assign addresses to orders" do
-        choose "order_ship_address_id_#{address.id}"
         within("#billing") do
           choose I18n.t(:other_address, :scope => :address_book)
           fill_in_address(billing)
@@ -582,7 +595,6 @@ feature "Address selection during checkout" do
       it "should see form when new billing address invalid" do
         address = user.addresses.first
         billing = FactoryGirl.build(:address, :address1 => nil, :state => state)
-        choose "order_ship_address_id_#{address.id}"
         within("#billing") do
           choose I18n.t(:other_address, :scope => :address_book)
           fill_in_address(billing)
@@ -602,7 +614,6 @@ feature "Address selection during checkout" do
       it "should not save address for user" do
         expect{
           address = user.addresses.first
-          choose "order_ship_address_id_#{address.id}"
           within("#billing") do
             choose I18n.t(:other_address, :scope => :address_book)
             fill_in_address(address)

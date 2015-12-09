@@ -28,6 +28,7 @@ feature 'Aborted guest checkout', js: true do
       end
 
       within '#shipping' do
+        uncheck 'order_use_billing'
         fill_in_address(build(:fake_address))
       end
 
