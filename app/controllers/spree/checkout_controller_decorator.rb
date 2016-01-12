@@ -111,9 +111,13 @@ Spree::CheckoutController.class_eval do
     end
 
     addr = Spree::Address.find(id)
+    user_id = spree_current_user.try(:id)
 
-    if addr.user_id != spree_current_user.try(:id)
-      raise "Frontend address forging: address user #{addr.user_id.inspect} != current user #{spree_current_user.try(:id).inspect}"
+    if addr.user_id != user_id
+      # Allow a merged/assigned formerly guest order to have a guest address
+      if addr.user_id || (@order.bill_address_id != id && @order.ship_address_id != id)
+        raise "Frontend address forging: address user #{addr.user_id.inspect} != current user #{spree_current_user.try(:id).inspect}"
+      end
     end
 
     addr
