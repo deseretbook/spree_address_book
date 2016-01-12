@@ -55,8 +55,8 @@ feature 'Aborted guest checkout', js: true do
     click_button 'Continue' # On cart page
 
     expect {
-      select_address guest_order.bill_address_id, :bill
-      select_address guest_order.ship_address_id, :ship
+      select_checkout_address guest_order.bill_address_id, :bill
+      select_checkout_address guest_order.ship_address_id, :ship
       click_button 'Continue' # On address page
       expect(current_path).to eq(spree.checkout_state_path(:delivery))
     }.not_to change{ Spree::Address.count }

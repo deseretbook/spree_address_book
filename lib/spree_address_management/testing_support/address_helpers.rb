@@ -5,7 +5,7 @@ module SpreeAddressManagement
       # checkout.  Both parameters are required.  Pass an Integer or a
       # Spree::Address for +address+, and :bill or :ship for +type+.  Pass
       # nil or 0 for +address+ to select "Choose other address".
-      def select_address(address, type)
+      def select_checkout_address(address, type)
         case type
         when :bill
           container = '#billing'
