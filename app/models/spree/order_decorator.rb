@@ -141,6 +141,15 @@ Spree::Order.class_eval do
     !complete?
   end
 
+  # Overrides Spree to assign user
+  def merge_with_user_addresses!(order, user=nil)
+    merge_without_user_addresses!(order, user)
+
+    if user || self.user
+      merge_user_addresses
+    end
+  end
+  alias_method_chain :merge!, :user_addresses
 
   private
 

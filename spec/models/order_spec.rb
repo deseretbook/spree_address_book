@@ -89,6 +89,18 @@ describe Spree::Order do
       end
     end
 
+    it 'merges user addresses from a merged guest order' do
+      guest_order = create(:shipped_order, user: nil, email: 'guest@example.com')
+
+      expect(guest_order.bill_address.user_id).to be_nil
+      expect(guest_order.ship_address.user_id).to be_nil
+
+      guest_order.merge!(order, user)
+
+      expect(guest_order.bill_address.user_id).to eq(user.id)
+      expect(guest_order.ship_address.user_id).to eq(user.id)
+    end
+
     it 'should clone addresses on complete' do
       expect( order.state ).to eq 'cart'
       until order.complete?
