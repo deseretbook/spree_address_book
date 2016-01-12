@@ -1,6 +1,4 @@
-# Tests to make sure an aborted guest checkout (which due to a bug in
-# spree_auth_devise creates invalid nil addresses in the database) doesn't
-# prevent a customer from checking out.
+# Tests to ensure a guest can edit addresses using the Edit link on checkout.
 require 'spec_helper'
 
 feature 'Guest order address editing', js: true do
@@ -58,4 +56,3 @@ feature 'Guest order address editing', js: true do
     expect(Spree::Order.last.state).to eq('complete')
   end
 end
-
