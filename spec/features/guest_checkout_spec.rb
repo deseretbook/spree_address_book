@@ -51,19 +51,23 @@ feature 'Aborted guest checkout', js: true do
     old_bill = order.bill_address_id
     old_ship = order.ship_address_id
 
-    sign_in_to_cart!(user)
-    click_button 'Continue' # On cart page
+    expect {
+      sign_in_to_cart!(user)
+    }.to change{ Spree::Order.count }.by(-1)
+
+    expect{ order.reload }.to raise_error(ActiveRecord::RecordNotFound)
 
     expect {
+      visit spree.checkout_state_path(:address)
       select_checkout_address guest_order.bill_address_id, :bill
       select_checkout_address guest_order.ship_address_id, :ship
       click_button 'Continue' # On address page
       expect(current_path).to eq(spree.checkout_state_path(:delivery))
     }.not_to change{ Spree::Address.count }
 
+    visit spree.checkout_state_path(:address)
     expect{ complete_checkout }.to change{ Spree::Address.count }.by(2)
 
-    expect{ order.reload }.to raise_error(ActiveRecord::RecordNotFound)
     expect(guest_order.reload.state).to eq('complete')
   end
 end
