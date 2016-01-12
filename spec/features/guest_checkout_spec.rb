@@ -23,8 +23,6 @@ feature 'Aborted guest checkout', js: true do
     click_button 'Continue' # On address page (expecting failure)
 
     sign_in_to_cart!(user)
-    click_button 'Continue' # On cart page
-
     expect(current_path).to eq(spree.checkout_state_path(:address))
 
     expect {
@@ -53,6 +51,7 @@ feature 'Aborted guest checkout', js: true do
 
     expect {
       sign_in_to_cart!(user)
+      expect(current_path).to eq(spree.checkout_state_path(:address))
     }.to change{ Spree::Order.count }.by(-1)
 
     expect{ order.reload }.to raise_error(ActiveRecord::RecordNotFound)
