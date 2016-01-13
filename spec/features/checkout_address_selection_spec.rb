@@ -262,7 +262,7 @@ feature "Address selection during checkout" do
         end
 
         it 'should preserve a selected address and select other ship address if the ship address fails validation' do
-          choose "order_bill_address_id_#{@a.id}"
+          select_checkout_address(@a, :bill)
 
           within '#shipping' do
             choose I18n.t(:other_address, scope: :address_book)
@@ -315,7 +315,7 @@ feature "Address selection during checkout" do
       it "should save 1 new address for user" do
         expect do
           address = user.addresses.first
-          choose "order_bill_address_id_#{address.id}"
+          select_checkout_address(address, :bill)
           fill_in_address(shipping, :ship)
           complete_checkout
         end.to change{ user.addresses.count }.by(1)
@@ -323,7 +323,7 @@ feature "Address selection during checkout" do
 
       it "should assign addresses to orders" do
         address = user.addresses.first
-        choose "order_bill_address_id_#{address.id}"
+        select_checkout_address(address, :bill)
         fill_in_address(shipping, :ship)
         complete_checkout
         expect(page).to have_content("processed successfully")
@@ -340,7 +340,7 @@ feature "Address selection during checkout" do
       it "should see form when new shipping address invalid" do
         address = user.addresses.first
         shipping = FactoryGirl.build(:address, :address1 => nil, :state => state)
-        choose "order_bill_address_id_#{address.id}"
+        select_checkout_address(address, :bill)
         fill_in_address(shipping, :ship)
         click_button "Save and Continue"
         within("#saddress1") do
@@ -355,7 +355,7 @@ feature "Address selection during checkout" do
     describe "using saved address for billing and shipping" do
       it "should addresses to order" do
         address = user.addresses.first
-        choose "order_bill_address_id_#{address.id}"
+        select_checkout_address(address, :bill)
         check "Use Billing Address"
         complete_checkout
         within("#order > div.row.steps-data > div:nth-child(1)") do
@@ -371,7 +371,7 @@ feature "Address selection during checkout" do
       it "should not add addresses to user" do
         expect do
           address = user.addresses.first
-          choose "order_bill_address_id_#{address.id}"
+          select_checkout_address(address, :bill)
           check "Use Billing Address"
           complete_checkout
         end.to_not change{ user.addresses.count }
@@ -463,13 +463,8 @@ feature "Address selection during checkout" do
       it 'should not fill in the Other Address fields' do
         visit spree.checkout_state_path(:address)
 
-        within '#billing' do
-          choose I18n.t(:other_address, scope: :address_book)
-        end
-
-        within '#shipping' do
-          choose I18n.t(:other_address, scope: :address_book)
-        end
+        select_checkout_address nil, :bill
+        select_checkout_address nil, :ship
 
         expect(find_field('order_bill_address_attributes_firstname').value).to be_blank
         expect(find_field('order_ship_address_attributes_firstname').value).to be_blank
@@ -484,7 +479,7 @@ feature "Address selection during checkout" do
       it "should save 1 new address for user" do
         expect do
           address = user.addresses.first
-          choose "order_ship_address_id_#{address.id}"
+          select_checkout_address(address, :ship)
           fill_in_address(billing, :bill)
           check "Use Billing Address"
           complete_checkout
@@ -497,7 +492,7 @@ feature "Address selection during checkout" do
         scenario 'selecting addresses does not save them to the user defaults' do
           expect {
             address = user.addresses.first
-            choose "order_ship_address_id_#{address.id}"
+            select_checkout_address(address, :ship)
             fill_in_address(billing, :bill)
             check "Use Billing Address"
             complete_checkout
@@ -506,7 +501,7 @@ feature "Address selection during checkout" do
       end
 
       it "should assign addresses to orders" do
-        choose "order_ship_address_id_#{address.id}"
+        select_checkout_address(address, :ship)
         fill_in_address(billing, :bill)
         check "Use Billing Address"
         complete_checkout
@@ -524,7 +519,7 @@ feature "Address selection during checkout" do
       it "should see form when new billing address invalid" do
         address = user.addresses.first
         billing = FactoryGirl.build(:address, :address1 => nil, :state => state)
-        choose "order_ship_address_id_#{address.id}"
+        select_checkout_address(address, :ship)
         fill_in_address(billing, :bill)
 
         click_button "Save and Continue"
@@ -541,7 +536,7 @@ feature "Address selection during checkout" do
       it "should not save address for user" do
         expect{
           address = user.addresses.first
-          choose "order_ship_address_id_#{address.id}"
+          select_checkout_address(address, :ship)
           fill_in_address(address, :bill)
           check "Use Billing Address"
           complete_checkout

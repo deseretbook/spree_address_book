@@ -1,6 +1,31 @@
 module SpreeAddressManagement
   module TestingSupport
     module AddressHelpers
+      # Select an existing address from the list of saved addresses during
+      # checkout.  Both parameters are required.  Pass an Integer or a
+      # Spree::Address for +address+, and :bill or :ship for +type+.  Pass
+      # nil or 0 for +address+ to select "Choose other address".
+      def select_checkout_address(address, type)
+        case type
+        when :bill
+          container = '#billing'
+        when :ship
+          container = '#shipping'
+        else
+          raise "Invalid type #{type}"
+        end
+
+        address = address.id if address.is_a?(Spree::Address)
+
+        within container do
+          if address.nil? || address == 0
+            choose I18n.t(:other_address, scope: :address_book)
+          else
+            choose "order_#{type}_address_id_#{address}"
+          end
+        end
+      end
+
       # Fill in an already loaded address form with the given +values+ (either a
       # Spree::Address, or a Hash mapping field names to field values).
       #
