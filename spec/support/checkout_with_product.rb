@@ -51,6 +51,15 @@ shared_context "checkout with product" do
     click_button "add-to-cart-button"
   end
 
+  # Adds a mug to the cart and proceeds to the address step as a guest
+  def start_guest_checkout
+    add_mug_to_cart
+    restart_checkout
+    fill_in 'order_email', with: 'guest@example.com'
+    click_button 'Continue' # On registration page
+    expect(current_path).to match(/(checkout|address)$/)
+  end
+
   private
   def should_have_address_fields
     expect(page).to have_field("First Name")
